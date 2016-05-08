@@ -33,28 +33,20 @@
 
 #include <QThread>
 #include <QDebug>
+#include <QMutex>
 #include <sstream>
 #include "SamuQl.h"
+#include "VideoConverter.h"
 
 class GameOfLife : public QThread
 {
     Q_OBJECT
 
-    int m_w {40}, m_h {30};
+    int m_w, m_h;
 
     bool ***lattices;
     int latticeIndex;
     void development();
-    int  numberOfNeighbors ( bool **lattice,
-                             int r, int c, bool s );
-    void glider ( bool **lattice, int x, int y );
-    void car ( bool **lattice, int x, int y );
-    int carx {0};
-    void man ( bool **lattice, int x, int y );
-    int manx {0};
-    void house ( bool **lattice, int x, int y );
-    int housex {0};
-
 
     bool **predictions;
     void learning();
@@ -65,10 +57,18 @@ class GameOfLife : public QThread
 
     long m_time {0};
 
-    int m_delay {1};
+    int m_delay {45};
+
+    size_t mFrameNum{0};
+    size_t mNumOfFrames;
+
+    QMutex *m_mutex;
+    bool m_stopped;
+
+    VideoConverter *mMovie;
 
 public:
-    GameOfLife ( int w = 30, int h = 20 );
+    GameOfLife ( int w = 30, int h = 20, VideoConverter *conv = 0 );
     ~GameOfLife();
 
     void run();
@@ -85,6 +85,8 @@ public:
             m_delay = delay;
         }
     }
+
+    void stop();
 
 signals:
     void cellsChanged ( bool **, bool ** );
